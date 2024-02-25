@@ -1,0 +1,90 @@
+body
+{
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+}
+
+header
+{
+    padding: 6px;
+    font-size: 16px;
+    text-align: center;
+    line-height: 8px;
+}
+
+p#names
+{
+    line-height: 22px;
+    color: darkslategrey
+}
+
+p, ul
+{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+}
+
+h1
+{
+    font-size: 32px;
+    color:#3f19b1
+}
+
+h2
+{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 24px;
+    text-align: center;
+}
+
+.topnav
+{
+    background-color: #333;
+    overflow: hidden;
+}
+
+.topnav a
+{
+    float: left;
+    color: #f2f2f2;
+    text-align: center;
+    text-decoration: none;
+    padding: 14px 16px;
+    font-size: 16px;
+}
+
+.topnav a:hover
+{
+    background-color: #ddd;
+    color: black;
+}
+
+.topnav a.active
+{
+    background-color: #5220E6;
+    color: white;
+}
+
+.row:after 
+{
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.column 
+{
+    padding: 10px;
+    float: left;
+}
+
+.left, .right
+{
+    background-color: #f0f0f0;
+    width: 28%;
+}
+
+.middle
+{
+    width: 39.275%;
+}
