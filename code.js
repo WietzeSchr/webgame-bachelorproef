@@ -141,16 +141,12 @@ class lexp
     toHTML()
     {
         var res = "";
+        res += "Answer    : "
         if (this.length == 0)
         {
-            if (activeTerm.countVal(-1) == activeTerm.length)
-            {
-                res += "...";
-            }
-            else
-            {
-                res = activeTerm.toHTML();
-            }
+            res += "...";
+            res += "<br>Active term: "
+            res += activeTerm.toHTML();
         }
         else
         {
@@ -163,10 +159,8 @@ class lexp
                     res += " + ";
                 }
             }
-            if (activeTerm.countVal(-1) != activeTerm.length)
-            {
-                res += activeTerm.toHTML();
-            }
+            res += "<br>Active term:"
+            res += activeTerm.toHTML();
         }
         return res;
     }
@@ -220,6 +214,13 @@ function main()
 function pushTerm()
 {
     answer.addTerm(activeTerm);
+    activeTerm = new pterm(Array(varCount).fill(-1));
+    main();
+}
+
+function delTerm()
+{
+    answer.removeTerm(activeTerm);
     activeTerm = new pterm(Array(varCount).fill(-1));
     main();
 }
