@@ -4,7 +4,8 @@
         <title>Webgame bachelorproef</title>
         <link rel ="stylesheet" href="../css/stylesheet.css">
     </head>
-    <body>
+    <body onload="main()">
+        <script src="../code.js"></script>
         <header style="background-color: #a6a6a6;">
             <h1>Webgame bachelorproef</h1>
             <p id = "names">Quinten Vandenschrik & Wietze Schryvers</p>
@@ -37,10 +38,19 @@
             </div>
             <div class="column right">
                 <h2>Your answer</h2>
-                <p><i>Hiervoor dacht ik aan knoppen op het scherm voor de plus, een voor elke variabele, en een voor de negatie.
-                    Een soort calculator interface
-                </i></p>
-                <a href="help.html">Need help solving your problem?</a>
+                <p id="answer"></p>
+                <p id="buttons">
+                    <button onclick="addToTerm(1)">x<sub>1</sub></button>
+                    <button onclick="addToTerm(2)">x<sub>2</sub></button>
+                    <button onclick="addToTerm(3)">x<sub>3</sub></button>
+                    <button onclick="addToTerm(-1)">x'<sub>1</sub></button>
+                    <button onclick="addToTerm(-2)">x'<sub>2</sub></button>
+                    <button onclick="addToTerm(-3)">x'<sub>3</sub></button>
+                    <button onclick="pushTerm()">Push term</button>
+                    <button onclick="emptyAnswer()">Clear answer</button>
+                </p>
+                <p><a href="help.html">Need help solving your problem?</a></p>
+                
             </div>
         </div>
     </body>
