@@ -16,6 +16,18 @@ class pterm
         return equalArr(this.term, pother.term);
     }
 
+    includes(pother)
+    {
+        for (var i = 0; i < this.length; i++)
+        {
+            if (this.term[i] != pother.term[i] && this.term[i] != -1)
+            {
+                return false;
+            }
+        }
+        return false;
+    }
+
     differAt(pother)
     {
         var res = [];
@@ -27,6 +39,28 @@ class pterm
             }
         }
         return res;
+    }
+
+    expand()
+    {
+        var res = [this];
+        var found = false;
+        for (var i = 0; i < this.length && !found; i++)
+        {
+            if (this.term[i] == -1)
+            {
+                var r1 = this.copy();
+                r1.setVar(i, 0);
+                var r2 = this.copy();
+                r2.setVar(i, 1);
+                found = true;
+            }
+        }
+        if (! found)
+        {
+            return [];
+        }
+        return [r1, r2];
     }
 
     countVal(n)
@@ -61,7 +95,7 @@ class pterm
 
     copy()
     {
-        return new pterm(this.term.copy);
+        return new pterm(copyList(this.term));
     }
 }
 
@@ -101,6 +135,30 @@ class lexp
         this.addTerm(term);
     }
 
+    includesTerm(term)
+    {
+        for (var i = 0; i < this.length; i++)
+        {
+            if (this.terms[i].includes(term))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    findIncludedTerm(term)
+    {
+        for (var i = 0; i < this.length; i++)
+        {
+            if (term.includes(this.terms[i]))
+            {
+                return this.terms[i];
+            }
+        }
+        return undefined;
+    }
+
     containsTerm(term)
     {
         for (var i = 0; i < this.length; i ++)
@@ -111,6 +169,41 @@ class lexp
             }
         }
         return false;
+    }
+
+    notExpanded()
+    {
+        for (var i = 0; i < this.length; i++)
+        {
+            if (this.terms[i].countVal(-1) > 0)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    genExpanded()
+    {
+        var res = new lexp([]);
+        for (var i = 0; i < this.length; i++)
+        {
+            if (this.terms[i].countVal(-1) > 0)
+            {
+                var expTerms = this.terms[i].expand();
+                res.addTerm(expTerms[0]);
+                res.addTerm(expTerms[1]);
+            }
+            else
+            {
+                res.addTerm(this.terms[i].copy());    
+            }
+        }
+        if (res.notExpanded())
+        {
+            return res.genExpanded();
+        }
+        return res;
     }
 
     equal(lother)
@@ -131,11 +224,12 @@ class lexp
 
     deepcopy()
     {
-        var newTerms = []
-        for (i = 0; i < this.length; i++)
+        var newExp = new lexp([])
+        for (var i = 0; i < this.length; i++)
         {
-            newTerms.push(this.terms[i].copy());
+            newExp.addTerm(this.terms[i].copy());
         }
+        return newExp;
     }
 
     toHTML()
@@ -164,6 +258,16 @@ class lexp
         }
         return res;
     }
+}
+
+function copyList(list)
+{
+    var res = Array(list.length)
+    for (var i = 0; i < list.length; i++)
+    {
+        res[i] = list[i];
+    }
+    return res;
 }
 
 function addToTerm(n)
@@ -202,13 +306,18 @@ function emptyAnswer()
     main();
 }
 
+
 varCount = 3;
 answer = new lexp([]);
 activeTerm = new pterm(Array(varCount).fill(-1));
+problem = new lexp([new pterm([-1,1,-1]), new pterm([1,-1,0])]);
+sol = problem.deepcopy();
+problem = problem.genExpanded();
 
 function main()
 {
     document.getElementById("answer").innerHTML = answer.toHTML();
+    document.getElementById("problem").innerHTML = problem.toHTML();
 }
 
 function pushTerm()
