@@ -94,3 +94,46 @@ h2
 {
     width: 39.275%;
 }
+
+.tableContainer
+{
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    border: 1px solid #333333;
+}
+
+.tableContainer tbody
+{
+    display: block;
+    width: 100%;
+    overflow: auto;
+    max-height: 200px;
+}
+
+.tableContainer thead tr
+{
+    display: block;
+}
+
+.tableContainer th, .tableContainer td
+{
+    padding: 5px 10px;
+    width: 200px;
+}
+
+th
+{
+    background: cornflowerblue;
+    border: 2px solid #191919;
+}
+
+td
+{
+    text-align: center;
+}
+
+.alternativeRow td
+{
+    background: #e6e6e6;
+}
