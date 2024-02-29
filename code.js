@@ -232,6 +232,30 @@ class lexp
         return newExp;
     }
 
+    toTableHTML()
+    {
+        var res = "";
+        createHeader();
+        for (var i = 0; i < this.length; i++)
+        {
+            if (i % 2 == 1)
+            {
+                res += `<tr class="alternativeRow">`;
+            }
+            else
+            {
+                res += `<tr>`;
+            }
+            for (var j = 0; j < varCount; j++)
+            {
+                res += `<td>${this.terms[i].term[j]}</td>`
+            }
+            res += `</tr>`;
+        }        
+        return res;
+    }
+
+
     toHTML()
     {
         var res = "";
@@ -258,6 +282,17 @@ class lexp
         }
         return res;
     }
+}
+
+function createHeader()
+{
+    var res = `<tr>`;
+    for (var i = 0; i < varCount; i++)
+    {
+        res += `<th>x<sub>${i+1}</sub></th>`;
+    }
+    res += `</tr>`;
+    document.getElementById("fixedHeader").innerHTML = res;
 }
 
 function copyList(list)
@@ -317,7 +352,7 @@ problem = problem.genExpanded();
 function main()
 {
     document.getElementById("answer").innerHTML = answer.toHTML();
-    document.getElementById("problem").innerHTML = problem.toHTML();
+    document.getElementById("problem").innerHTML = problem.toTableHTML();
 }
 
 function pushTerm()
