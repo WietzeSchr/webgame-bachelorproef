@@ -235,7 +235,6 @@ class lexp
     toTableHTML()
     {
         var res = "";
-        createHeader();
         for (var i = 0; i < this.length; i++)
         {
             if (i % 2 == 1)
@@ -351,8 +350,26 @@ problem = problem.genExpanded();
 
 function main()
 {
-    document.getElementById("answer").innerHTML = answer.toHTML();
+    createHeader();
     document.getElementById("problem").innerHTML = problem.toTableHTML();
+    document.getElementById("answer").innerHTML = answer.toHTML();
+    createButtons();
+}
+
+function createButtons()
+{
+    var res = "<tr>";
+    for (var i = 0; i < varCount; i++)
+    {
+        res += `<td><button onclick="addToTerm(${i + 1})">x<sub>${i+1}</sub></button></td>`;
+    }
+    res += `</tr><tr>`;
+    for (i = 0; i < varCount; i++)
+    {
+        res += `<td><button onclick="addToTerm(-${i + 1})">x'<sub>${i+1}</sub></button></td>`;
+    }
+    res += `</tr>`;
+    document.getElementById("buttons").innerHTML = res;
 }
 
 function pushTerm()
