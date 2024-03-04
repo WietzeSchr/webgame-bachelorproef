@@ -116,16 +116,18 @@ h2
     display: block;
 }
 
-.tableContainer th, .tableContainer td
+.tableContainer th
 {
     padding: 5px 10px;
     width: 200px;
-}
-
-th
-{
     background: cornflowerblue;
     border: 2px solid #191919;
+}
+
+.tableContainer td
+{
+    padding: 5px 10px;
+    width: 200px;
 }
 
 td
@@ -141,4 +143,22 @@ td
 .buttons td
 {
     width: 50px;
+}
+
+.win
+{
+    width: 100%;
+    font-size: 30px;
+    background: #378805;
+    color: #fff;
+}
+
+.winButton button
+{
+    height: 100px;
+}
+
+.winButton
+{
+    width: 50%;
 }

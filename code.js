@@ -65,9 +65,9 @@ class pterm
     differAt(pother)
     {
         var res = [];
-        for (i = 0; i < this.length; i++)
+        for (var i = 0; i < this.length; i++)
         {
-            if (this.term[i] != pother.term[i])
+            if (this.term[i] != pother.term[i] && (this.term[i] != -1 || pother.term[i]  != -1))
             {
                 res += i;
             }
@@ -322,7 +322,16 @@ function main()
     createHeader();
     document.getElementById("problem").innerHTML = problem.toTableHTML();
     document.getElementById("answer").innerHTML = answer.toHTML();
-    createButtons();
+    if (! checkWin())
+    {
+        createButtons();
+        clearWin();
+    }
+    else
+    {
+        clearButtons();
+        wonGame();
+    }
 }
 
 function pushTerm()
@@ -371,6 +380,33 @@ function addToTerm(n)
         }
     }
     main();
+}
+
+function checkWin()
+{
+    var extendedAnswer = answer.deepcopy();
+    extendedAnswer = answer.genExpanded();
+    if (extendedAnswer.equal(problem))
+    {
+        return true;
+    }
+    return false;
+}
+
+function wonGame()
+{
+    document.getElementById("win").innerHTML = `<thead><th>You win !<th></thead>`;
+    document.getElementById("win").innerHTML += `<tbody><tr><td class ="wonButton"><button onclick="emptyAnswer()">Restart</button></td></tr></tbody>`;
+}
+
+function clearWin()
+{
+    document.getElementById("win").innerHTML = "";
+}
+
+function clearButtons()
+{
+    document.getElementById("buttons").innerHTML = ""
 }
 
 //////////////////
@@ -458,8 +494,19 @@ function generateRandom(terms, avgVarStart, avgVarEnd)
         var term = generateTerm(res, avgVarStart, avgVarEnd);
         if (! res.includesTerm(term) && res.findIncludedTerm(term) == undefined)
         {
-            res.addTerm(term);
-            i++;
+            var minimalize = false;
+            for (var j = 0; j < res.length; j++)
+            {
+                if (res.terms[j].differAt(term).length == 1)
+                {
+                    minimalize = true;
+                }
+            }
+            if (! minimalize)
+            {
+                res.addTerm(term);
+                i++;
+            }
         }
     }
     return res
