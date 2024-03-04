@@ -137,3 +137,8 @@ td
 {
     background: #e6e6e6;
 }
+
+.buttons td
+{
+    width: 50px;
+}

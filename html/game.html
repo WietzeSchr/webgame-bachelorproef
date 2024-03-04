@@ -28,11 +28,11 @@
                 <h2>Choose the difficulty</h2>
                 <p>
                     <ul>
-                        <li>Very easy</li>
-                        <li>Easy</li>
-                        <li>Average</li>
-                        <li>Hard</li>
-                        <li>Very hard</li>
+                        <li><a href=# onclick="generateBeginner()">Beginner</a></li>
+                        <li><a href=# onclick="generateEasy()">Easy</a></li>
+                        <li><a href=# onclick="generateMedium()">Medium</a></li>
+                        <li><a href=# onclick="generateHard()">Hard</a></li>
+                        <li><a href=# onclick="generateExpert()">Expert</a></li>
                     </ul>
                 </p>
             </div>
@@ -58,7 +58,7 @@
                             <th><button onclick="emptyAnswer()">Clear answer</button></th>
                         </tr>
                     </thead>
-                    <tbody id="buttons">
+                    <tbody id="buttons" class="buttons">
                     </tbody>
                 </table>
                 <p><a href="help.html">Need help solving your problem?</a></p>
