@@ -30,7 +30,6 @@ class pterm
 
     expand()
     {
-        var res = [this];
         var found = false;
         for (var i = 0; i < this.length && !found; i++)
         {
@@ -69,15 +68,35 @@ class pterm
         {
             if (this.term[i] != pother.term[i] && (this.term[i] != -1 || pother.term[i]  != -1))
             {
-                res += i;
+                res.push(i);
             }
         }
         return res;
     }
 
+    getVarIndex() {
+        var res = [];
+        for (var i = 0; i < this.length; i++) {
+            if (this.term[i] == 0 || this.term[i] == 1) {
+                res[res.length] = i;
+            }
+        }
+        return res;
+    }
+
+    flip(i)
+    {
+        if (this.term[i] == 0) {
+            this.setVar(i, 1);
+        }
+        else if (this.term[i] == 1) {
+            this.setVar(i, 0);
+        }
+    }
+
     toHTML()
     {
-        var  res = ""
+        var  res = "";
         for (var i = 0; i < this.length; i++)
         {
             if (this.term[i] == 1)
@@ -112,17 +131,20 @@ class lexp
     constructor(pterms)
     {
         this.terms = pterms;
-        this.length = pterms.length;
     }
 
     removeTerm(term)
     {
-        for (var i = 0; i < this.length; i++)
-        {
-            if (this.terms[i].equal(term))
-            {
-                this.terms.splice(i,i);
-                this.length -= 1;
+        for (var i = 0; i < this.terms.length; i++) {
+            if (this.terms[i].equal(term)) {
+                var newTerms = [];
+                for (var j = 0; j < this.terms.length; j++) {
+                    if (j != i) {
+                        newTerms.push(this.terms[j]);
+                    }
+                }
+                this.terms = newTerms;
+                break;
             }
         }
     }
@@ -132,7 +154,6 @@ class lexp
         if (! this.containsTerm(term))
         {
             this.terms.push(term);
-            this.length += 1;
         }
     }
 
@@ -146,7 +167,7 @@ class lexp
     avgVar()
     {
         var varCounter = 0;
-        for (var i = 0; i < this.length; i++)
+        for (var i = 0; i < this.terms.length; i++)
         {
             varCounter += varCount - this.terms[i].countVal(-1);
         }
@@ -159,7 +180,7 @@ class lexp
 
     includesTerm(term)
     {
-        for (var i = 0; i < this.length; i++)
+        for (var i = 0; i < this.terms.length; i++)
         {
             if (this.terms[i].includes(term))
             {
@@ -171,7 +192,7 @@ class lexp
 
     findIncludedTerm(term)
     {
-        for (var i = 0; i < this.length; i++)
+        for (var i = 0; i < this.terms.length; i++)
         {
             if (term.includes(this.terms[i]))
             {
@@ -183,7 +204,7 @@ class lexp
 
     containsTerm(term)
     {
-        for (var i = 0; i < this.length; i ++)
+        for (var i = 0; i < this.terms.length; i++)
         {
             if (this.terms[i].equal(term))
             {
@@ -193,9 +214,58 @@ class lexp
         return false;
     }
 
+    addSymmetrie() {
+        var term = this.terms[randomInt(0, this.terms.length - 1)];
+        for (var j = 0; j < this.terms.length; j++) {
+            var differ = term.differAt(this.terms[j]);
+            if (differ.length == 2) {
+                var i = randomInt(0,1);
+                term.flip(differ[i]);
+                return;
+            }
+        }
+        for (var j = 0; j < this.terms.length; j++) {
+            var differ = term.differAt(this.terms[j]);
+            if (differ.length == 3) {
+                var i = randomInt(0,2);
+                term.flip(differ[i]);
+                return;
+            }
+        }
+        
+    }
+
+    removeSymmetrie(solution) {
+        var min = [new pterm([1,1,1])]
+        for (var i = 0; i < solution.terms.length; i++) {
+            if (solution.terms[i].countVal(-1) > min[0].countVal(-1)) {
+                min = [solution.terms[i]];
+            }
+            else if (solution.terms[i].countVal(-1) == min[0].countVal(-1)) {
+                min = min + [solution.terms[i]];
+            }
+        }
+        var j = randomInt(0, min.length - 1);
+        this.break(min[j]);
+    }
+
+    break(minTerm) {
+        var v = minTerm.getVarIndex();
+        var e = new lexp([minTerm]);
+        var le = e.genExpanded();
+        var i = randomInt(0, le.terms.length - 1);
+        var j = randomInt(0, v.length - 1);
+        if (le.terms[i].term[j] == 0) {
+            this.changeTerm(le.terms[i], j, 1);
+        }
+        else {
+            this.changeTerm(le.terms[i], j, 0);
+        }
+    }
+
     notExpanded()
     {
-        for (var i = 0; i < this.length; i++)
+        for (var i = 0; i < this.terms.length; i++)
         {
             if (this.terms[i].countVal(-1) > 0)
             {
@@ -208,7 +278,7 @@ class lexp
     genExpanded()
     {
         var res = new lexp([]);
-        for (var i = 0; i < this.length; i++)
+        for (var i = 0; i < this.terms.length; i++)
         {
             if (this.terms[i].countVal(-1) > 0)
             {
@@ -231,7 +301,7 @@ class lexp
     toTableHTML()
     {
         var res = "";
-        for (var i = 0; i < this.length; i++)
+        for (var i = 0; i < this.terms.length; i++)
         {
             if (i % 2 == 1)
             {
@@ -262,11 +332,11 @@ class lexp
         }
         else
         {
-            for (var i = 0; i < this.length; i++)
+            for (var i = 0; i < this.terms.length; i++)
             {
                 var term = this.terms[i];
                 res += term.toHTML();
-                if (i != this.length - 1 || activeTerm.countVal(-1) != activeTerm.length)
+                if (i != this.terms.length - 1 || activeTerm.countVal(-1) != activeTerm.length)
                 {
                     res += " + ";
                 }
@@ -279,11 +349,11 @@ class lexp
 
     equal(lother)
     {
-        if (lother.length != this.length)
+        if (lother.terms.length != this.terms.length)
         {
             return false;
         }
-        for (var i = 0; i < this.length; i ++)
+        for (var i = 0; i < this.terms.length; i ++)
         {
             if (! this.containsTerm(lother.terms[i]))
             {
@@ -296,7 +366,7 @@ class lexp
     deepcopy()
     {
         var newExp = new lexp([])
-        for (var i = 0; i < this.length; i++)
+        for (var i = 0; i < this.terms.length; i++)
         {
             newExp.addTerm(this.terms[i].copy());
         }
@@ -409,6 +479,57 @@ function clearButtons()
     document.getElementById("buttons").innerHTML = ""
 }
 
+
+//////////////////
+//  MC CLUSKEY  //
+//////////////////
+
+function solve(canExp) {
+    var newIter = true;
+    while (newIter) {
+        var table = makeTable(canExp);
+        var newTerms = canExp.deepcopy();
+        for (var i = 0; i < varCount; i++) {
+            for (var j = 0; j < table[i].length; j++) {
+                for (var k = 0; k < table[i+1].length; k++) {
+                    var differ = table[i][j].differAt(table[i+1][k]);
+                    if (differ.length == 1) {
+                        var term12 = reduce(table[i][j], differ[0]);
+                        newTerms.removeTerm(table[i][j]);
+                        newTerms.removeTerm(table[i+1][k]);
+                        newTerms.addTerm(term12);
+                    }
+                }
+            }
+        }
+        if (newTerms.equal(canExp)) {
+            newIter = false;
+        }
+        else {
+            canExp = newTerms;
+        }
+    }
+    return canExp;
+}
+
+function makeTable(canExp) {
+    var res = {};
+    for (var i = 0; i <= varCount; i++) {
+        res[i] = [];
+    }
+    for (var i = 0; i < canExp.terms.length; i++) {
+        var counti = canExp.terms[i].countVal(1);
+        res[counti].push(canExp.terms[i]);
+    }
+    return res;
+}
+
+function reduce(term, i) {
+    var result = term.copy();
+    result.term[i] = -1;
+    return result;
+}
+
 //////////////////
 //  GENERATOR   //      Genereren van een oplossing die dan wordt ge-expand naar het volledig probleem
 //////////////////
@@ -416,10 +537,29 @@ function clearButtons()
 function generateBeginner()
 {
     varCount = 3;
-    var termCount = randomInt(2,3);
-    sol = generateRandom(termCount, 1.35, 1.75);
-    problem = sol.deepcopy();
-    problem = problem.genExpanded();
+    var termCount = randomInt(3,6);
+    var possibleTerms = generateAllTerms();
+    problem = generateRandom(termCount, possibleTerms);
+    sol = solve(problem);
+    var valid = false;
+    while (! valid) {
+        valid = true;
+        if (sol.terms.length == problem.terms.length) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length > 3) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length == 1) {
+            problem.removeSymmetrie(sol);
+            sol = solve(problem);
+            valid = false;
+        }
+    }
     emptyAnswer();
     main();
 }
@@ -427,10 +567,29 @@ function generateBeginner()
 function generateEasy()
 {
     varCount = 4;
-    var termCount = randomInt(3,6);
-    sol = generateRandom(termCount, 1.25, 2.70);
-    problem = sol.deepcopy();
-    problem = problem.genExpanded();
+    var termCount = randomInt(7,12);
+    var possibleTerms = generateAllTerms();
+    problem = generateRandom(termCount, possibleTerms);
+    sol = solve(problem);
+    var valid = false;
+    while (! valid) {
+        valid = true;
+        if (sol.terms.length >= problem.terms.length - 1) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length > 6) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length < 3) {
+            problem.removeSymmetrie(sol);
+            sol = solve(problem);
+            valid = false;
+        }
+    }
     emptyAnswer();
     main();
 }
@@ -438,10 +597,34 @@ function generateEasy()
 function generateMedium()
 {
     varCount = 5;
-    var termCount = randomInt(6,13);
-    sol = generateRandom(termCount, 1, 3.5);
-    problem = sol.deepcopy();
-    problem = problem.genExpanded();
+    var termCount = randomInt(14,23);
+    var possibleTerms = generateAllTerms();
+    problem = generateRandom(termCount, possibleTerms);
+    sol = solve(problem);
+    var valid = false;
+    while (! valid) {
+        valid = true;
+        if (sol.terms.length >= problem.terms.length - 3) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length > 8) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length > problem.terms.length * 3 / 5) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length < 5) {
+            problem.removeSymmetrie(sol);
+            sol = solve(problem);
+            valid = false;
+        }
+    }
     emptyAnswer();
     main();
 }
@@ -449,10 +632,34 @@ function generateMedium()
 function generateHard()
 {
     varCount = 6;
-    var termCount = randomInt(11, 22);
-    sol = generateRandom(termCount, 1.25, 4);
-    problem = sol.deepcopy();
-    problem = problem.genExpanded();
+    var termCount = randomInt(24,38);
+    var possibleTerms = generateAllTerms();
+    problem = generateRandom(termCount, possibleTerms);
+    sol = solve(problem);
+    var valid = false;
+    while (! valid) {
+        valid = true;
+        if (sol.terms.length >= problem.terms.length - 5) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length > 13) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length > problem.terms.length / 2) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length < 7) {
+            problem.removeSymmetrie(sol);
+            sol = solve(problem);
+            valid = false;
+        }
+    }
     emptyAnswer();
     main()
 }
@@ -460,56 +667,54 @@ function generateHard()
 function generateExpert()
 {
     varCount = 7;
-    var termCount = randomInt(15, 32);
-    var res = generateRandom(termCount, 1.35, 3.5);
-    sol = res;
-    problem = sol.deepcopy();
-    problem = problem.genExpanded();
+    var termCount = randomInt(44,80);
+    var possibleTerms = generateAllTerms();
+    problem = generateRandom(termCount, possibleTerms);
+    sol = solve(problem);
+    var valid = false;
+    while (! valid) {
+        valid = true;
+        if (sol.terms.length >= problem.terms.length - 8) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length > 32) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length > problem.terms.length * 3 / 5) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length < 15) {
+            problem.removeSymmetrie(sol);
+            sol = solve(problem);
+            valid = false;
+        }
+    }
     emptyAnswer();
     main();
 }
 
-function generateTerm(exp, avgVarStart, avgVarEnd)
+function generateRandom(termCount, possibleTerms)
 {
-    var term = new pterm(Array(varCount).fill(-1))
-    for (var i = 0; i < varCount; i++)
+    var res = new lexp([]);
+    for (var i = 0; i < termCount; i++)
     {
-        term.setVar(i, randomInt(-1,1));
-    }
-    if (! between(exp.avgVar(), avgVarStart, avgVarEnd))
-    {
-        while (between(term.countVal(-1), varCount - avgVarEnd, varCount - avgVarStart))
-        {
-            term.setVar(randomInt(0,varCount - 1), -1);
-        }
-    }
-    return term;
-}
-
-function generateRandom(terms, avgVarStart, avgVarEnd)
-{
-    res = new lexp([]);
-    for (var i = 0; i < terms;)
-    {
-        var term = generateTerm(res, avgVarStart, avgVarEnd);
-        if (! res.includesTerm(term) && res.findIncludedTerm(term) == undefined)
-        {
-            var minimalize = false;
-            for (var j = 0; j < res.length; j++)
-            {
-                if (res.terms[j].differAt(term).length == 1)
-                {
-                    minimalize = true;
-                }
-            }
-            if (! minimalize)
-            {
-                res.addTerm(term);
-                i++;
-            }
-        }
+        var j = randomInt(0, possibleTerms.terms.length - 1);
+        var term = possibleTerms.terms[j];
+        res.addTerm(term);
+        possibleTerms.removeTerm(term);
     }
     return res
+}
+
+function generateAllTerms() {
+    var l = new lexp([new pterm(new Array(varCount).fill(-1))]);
+    return l.genExpanded();
 }
 
 //////////////////
