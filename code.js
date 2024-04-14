@@ -241,8 +241,8 @@ class lexp
             if (solution.terms[i].countVal(-1) > min[0].countVal(-1)) {
                 min = [solution.terms[i]];
             }
-            else if (solution.term[i].countVal(-1) == min[0].countVal(-1)) {
-                min = min + [solution.term[i]];
+            else if (solution.terms[i].countVal(-1) == min[0].countVal(-1)) {
+                min = min + [solution.terms[i]];
             }
         }
         var j = randomInt(0, min.length - 1);
@@ -253,8 +253,8 @@ class lexp
         var v = minTerm.getVarIndex();
         var e = new lexp([minTerm]);
         var le = e.genExpanded();
-        var i = randomInt(0, le.length);
-        var j = randomInt(0, v.length);
+        var i = randomInt(0, le.terms.length - 1);
+        var j = randomInt(0, v.length - 1);
         if (le.terms[i].term[j] == 0) {
             this.changeTerm(le.terms[i], j, 1);
         }
@@ -537,24 +537,29 @@ function reduce(term, i) {
 function generateBeginner()
 {
     varCount = 3;
-    var termCount = randomInt(3,4);
-    var possibleTerms = new lexp([new pterm([1,1,1]), new pterm([1,1,0]), new pterm([1,0,1]), new pterm([1,0,0]), new pterm([0,1,1]), new pterm([0, 1, 0]), new pterm([0,0,1]), new pterm([0,0,0])]);
-    problem = new lexp([new pterm([1,0,0]), new pterm([0,1,0]), new pterm([0,0,1])]);
+    var termCount = randomInt(3,6);
+    var possibleTerms = generateAllTerms();
+    problem = generateRandom(termCount, possibleTerms);
     sol = solve(problem);
-    //var valid = false;
-    //while (! valid) {
-        //valid = true;
+    var valid = false;
+    while (! valid) {
+        valid = true;
         if (sol.terms.length == problem.terms.length) {
             problem.addSymmetrie();
             sol = solve(problem);
-        //    valid = false;
+            valid = false;
+        }
+        else if (sol.terms.length > 3) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
         }
         else if (sol.terms.length == 1) {
             problem.removeSymmetrie(sol);
             sol = solve(problem);
             valid = false;
         }
-    //}
+    }
     emptyAnswer();
     main();
 }
@@ -562,10 +567,29 @@ function generateBeginner()
 function generateEasy()
 {
     varCount = 4;
-    var termCount = randomInt(3,6);
-    sol = generateRandom(termCount, 1.25, 2.70);
-    problem = sol.deepcopy();
-    problem = problem.genExpanded();
+    var termCount = randomInt(7,12);
+    var possibleTerms = generateAllTerms();
+    problem = generateRandom(termCount, possibleTerms);
+    sol = solve(problem);
+    var valid = false;
+    while (! valid) {
+        valid = true;
+        if (sol.terms.length >= problem.terms.length - 1) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length > 6) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length < 3) {
+            problem.removeSymmetrie(sol);
+            sol = solve(problem);
+            valid = false;
+        }
+    }
     emptyAnswer();
     main();
 }
@@ -573,10 +597,34 @@ function generateEasy()
 function generateMedium()
 {
     varCount = 5;
-    var termCount = randomInt(6,13);
-    sol = generateRandom(termCount, 1, 3.5);
-    problem = sol.deepcopy();
-    problem = problem.genExpanded();
+    var termCount = randomInt(14,23);
+    var possibleTerms = generateAllTerms();
+    problem = generateRandom(termCount, possibleTerms);
+    sol = solve(problem);
+    var valid = false;
+    while (! valid) {
+        valid = true;
+        if (sol.terms.length >= problem.terms.length - 3) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length > 8) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length > problem.terms.length * 3 / 5) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length < 5) {
+            problem.removeSymmetrie(sol);
+            sol = solve(problem);
+            valid = false;
+        }
+    }
     emptyAnswer();
     main();
 }
@@ -584,10 +632,34 @@ function generateMedium()
 function generateHard()
 {
     varCount = 6;
-    var termCount = randomInt(11, 22);
-    sol = generateRandom(termCount, 1.25, 4);
-    problem = sol.deepcopy();
-    problem = problem.genExpanded();
+    var termCount = randomInt(24,38);
+    var possibleTerms = generateAllTerms();
+    problem = generateRandom(termCount, possibleTerms);
+    sol = solve(problem);
+    var valid = false;
+    while (! valid) {
+        valid = true;
+        if (sol.terms.length >= problem.terms.length - 5) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length > 13) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length > problem.terms.length / 2) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length < 7) {
+            problem.removeSymmetrie(sol);
+            sol = solve(problem);
+            valid = false;
+        }
+    }
     emptyAnswer();
     main()
 }
@@ -595,28 +667,36 @@ function generateHard()
 function generateExpert()
 {
     varCount = 7;
-    var termCount = randomInt(15, 32);
-    var res = generateRandom(termCount, 1.35, 3.5);
-    sol = res;
-    problem = sol.deepcopy();
-    problem = problem.genExpanded();
-    emptyAnswer();
-    main();
-}
-
-function chooseTerm()
-{
-    var newTerm = [];
-    for (var i = 0; i < varCount; i++) {
-        var j = randomInt();
-        if (j > 0,5) {
-            newTerm += 1;
+    var termCount = randomInt(44,80);
+    var possibleTerms = generateAllTerms();
+    problem = generateRandom(termCount, possibleTerms);
+    sol = solve(problem);
+    var valid = false;
+    while (! valid) {
+        valid = true;
+        if (sol.terms.length >= problem.terms.length - 8) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
         }
-        else {
-            newTerm += 0;
+        else if (sol.terms.length > 32) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length > problem.terms.length * 3 / 5) {
+            problem.addSymmetrie();
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length < 15) {
+            problem.removeSymmetrie(sol);
+            sol = solve(problem);
+            valid = false;
         }
     }
-    return new pterm(newTerm);
+    emptyAnswer();
+    main();
 }
 
 function generateRandom(termCount, possibleTerms)
@@ -630,6 +710,11 @@ function generateRandom(termCount, possibleTerms)
         possibleTerms.removeTerm(term);
     }
     return res
+}
+
+function generateAllTerms() {
+    var l = new lexp([new pterm(new Array(varCount).fill(-1))]);
+    return l.genExpanded();
 }
 
 //////////////////
