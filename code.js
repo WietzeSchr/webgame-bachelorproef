@@ -220,7 +220,9 @@ class lexp
             var differ = term.differAt(this.terms[j]);
             if (differ.length == 2) {
                 var i = randomInt(0,1);
+                this.removeTerm(term);
                 term.flip(differ[i]);
+                this.addTerm(term);
                 return;
             }
         }
@@ -228,7 +230,9 @@ class lexp
             var differ = term.differAt(this.terms[j]);
             if (differ.length == 3) {
                 var i = randomInt(0,2);
+                this.removeTerm(term);
                 term.flip(differ[i]);
+                this.addTerm(term);
                 return;
             }
         }
@@ -301,22 +305,49 @@ class lexp
     toTableHTML()
     {
         var res = "";
+        var fullAnswer = answer.genExpanded();
         for (var i = 0; i < this.terms.length; i++)
         {
-            if (i % 2 == 1)
-            {
-                res += `<tr class="alternativeRow">`;
+            if (fullAnswer.containsTerm(this.terms[i])) {
+                fullAnswer.removeTerm(this.terms[i]);
+                if (i % 2 == 1)
+                {
+                    res += `<tr class="found">`;
+                }
+                else
+                {
+                    res += `<tr class="alternativeRowFound">`;
+                }
             }
-            else
-            {
-                res += `<tr>`;
+            else {
+                if (i % 2 == 1)
+                {
+                    res += `<tr class="alternativeRow">`;
+                }
+                else
+                {
+                    res += `<tr>`;
+                }
             }
             for (var j = 0; j < varCount; j++)
             {
                 res += `<td>${this.terms[i].term[j]}</td>`
             }
             res += `</tr>`;
-        }        
+        }
+        for (var i = 0; i < fullAnswer.terms.length; i++) {
+            if (i % 2 == 1) {
+                res += `<tr class="wrong">`;
+            }
+            else {
+                res += `<tr class="alternativeRowWrong">`;
+            }
+            for (var j = 0; j < varCount; j++)
+            {
+                res += `<td>${fullAnswer.terms[i].term[j]}</td>`
+            }
+            res += `</tr>`;
+        }      
         return res;
     }
 
@@ -465,8 +496,21 @@ function checkWin()
 
 function wonGame()
 {
-    document.getElementById("win").innerHTML = `<thead><th>You win !<th></thead>`;
+    var score = calculateScore();
+    document.getElementById("win").innerHTML = `<thead><th>You win - score : ${score}/100<th></thead>`;
     document.getElementById("win").innerHTML += `<tbody><tr><td class ="wonButton"><button onclick="emptyAnswer()">Restart</button></td></tr></tbody>`;
+}
+
+function calculateScore() {
+    if (answer.equal(sol)) {
+        return 100;
+    }
+    else {
+        var pstart = problem.terms.length;
+        var poptimal = sol.terms.length;
+        var panswer = answer.terms.length;
+        return Math.round((pstart - panswer) / (pstart - poptimal) * 100);
+    }
 }
 
 function clearWin()
