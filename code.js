@@ -215,16 +215,35 @@ class lexp
     }
 
     addSymmetrie() {
-        var term = this.terms[randomInt(0, this.terms.length - 1)];
-        for (var j = 0; j < this.terms.length; j++) {
-            var differ = term.differAt(this.terms[j]);
-            if (differ.length == 2) {
-                var i = randomInt(0,1);
-                this.removeTerm(term);
-                term.flip(differ[i]);
-                this.addTerm(term);
-                return;
+        var termsCopy = this.deepcopy();
+        while (termsCopy.terms.length > 1) {    
+            var term = this.terms[randomInt(0, termsCopy.terms.length - 1)];
+            for (var j = 0; j < termsCopy.terms.length; j++) {
+                var differ = term.differAt(this.terms[j]);
+                if (differ.length == 2) {
+                    var i = randomInt(0,1);
+                    var termCopy = term.copy();
+                    termCopy.flip(differ[i]);
+                    if (! this.containsTerm(termCopy)) {
+                        this.removeTerm(term)
+                        this.addTerm(termCopy);
+                        return;
+                    }
+                    termCopy.flip(differ[i]);
+                    if (i == 1) {
+                        termCopy.flip(differ[0]);
+                    }
+                    else {
+                        termCopy.flip(differ[1]);
+                    }
+                    if (! this.containsTerm(termCopy)) {
+                        this.removeTerm(term)
+                        this.addTerm(termCopy);
+                        return;
+                    }
+                }
             }
+            termsCopy.removeTerm(term);
         }
         for (var j = 0; j < this.terms.length; j++) {
             var differ = term.differAt(this.terms[j]);
@@ -240,7 +259,7 @@ class lexp
     }
 
     removeSymmetrie(solution) {
-        var min = [new pterm([1,1,1])]
+        var min = new lexp([new pterm(new Array(varCount).fill(1))]);
         for (var i = 0; i < solution.terms.length; i++) {
             if (solution.terms[i].countVal(-1) > min[0].countVal(-1)) {
                 min = [solution.terms[i]];
@@ -259,11 +278,14 @@ class lexp
         var le = e.genExpanded();
         var i = randomInt(0, le.terms.length - 1);
         var j = randomInt(0, v.length - 1);
-        if (le.terms[i].term[j] == 0) {
-            this.changeTerm(le.terms[i], j, 1);
-        }
-        else {
-            this.changeTerm(le.terms[i], j, 0);
+        while (le.length > 1) {
+            var oldTerm = le.terms[i].copy();
+            var newTerm = le.terms[i].flip(v[j]);
+            if (! this.containsTerm(newTerm)) {
+                this.removeTerm(oldTerm);
+                this.addTerm(newTerm);
+                return;
+            }
         }
     }
 
@@ -641,7 +663,7 @@ function generateEasy()
 function generateMedium()
 {
     varCount = 5;
-    var termCount = randomInt(14,23);
+    var termCount = randomInt(14,22);
     var possibleTerms = generateAllTerms();
     problem = generateRandom(termCount, possibleTerms);
     sol = solve(problem);
