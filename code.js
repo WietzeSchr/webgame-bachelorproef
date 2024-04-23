@@ -466,8 +466,8 @@ function pushTerm()
 
 function delTerm()
 {
-    answer.removeTerm(activeTerm);
-    activeTerm = new pterm(Array(varCount).fill(-1));
+    answer.removeTerm(answer.terms[answer.terms.length - 1]);
+    //activeTerm = new pterm(Array(varCount).fill(-1));
     main();
 }
 
