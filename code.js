@@ -259,7 +259,7 @@ class lexp
     }
 
     removeSymmetrie(solution) {
-        var min = new lexp([new pterm(new Array(varCount).fill(1))]);
+        var min = [new pterm(new Array(varCount).fill(1))];
         for (var i = 0; i < solution.terms.length; i++) {
             if (solution.terms[i].countVal(-1) > min[0].countVal(-1)) {
                 min = [solution.terms[i]];
@@ -287,6 +287,15 @@ class lexp
                 return;
             }
         }
+    }
+
+    countPorts() {
+        var orPorts = this.terms.length - 1;
+        var andPorts = 0;
+        for (var i = 0; i < this.terms.length; i++) {
+            andPorts += varCount - this.terms[i].countVal(-1) + 1;
+        }
+        return orPorts + andPorts;
     }
 
     notExpanded()
@@ -528,9 +537,9 @@ function calculateScore() {
         return 100;
     }
     else {
-        var pstart = problem.terms.length;
-        var poptimal = sol.terms.length;
-        var panswer = answer.terms.length;
+        var pstart = problem.countPorts();
+        var poptimal = sol.countPorts();
+        var panswer = answer.countPorts();
         return Math.round((pstart - panswer) / (pstart - poptimal) * 100);
     }
 }
@@ -597,7 +606,7 @@ function reduce(term, i) {
 }
 
 //////////////////
-//  GENERATOR   //      Genereren van een oplossing die dan wordt ge-expand naar het volledig probleem
+//  GENERATOR   //
 //////////////////
 
 function generateBeginner()
@@ -728,41 +737,6 @@ function generateHard()
     }
     emptyAnswer();
     main()
-}
-
-function generateExpert()
-{
-    varCount = 7;
-    var termCount = randomInt(44,80);
-    var possibleTerms = generateAllTerms();
-    problem = generateRandom(termCount, possibleTerms);
-    sol = solve(problem);
-    var valid = false;
-    while (! valid) {
-        valid = true;
-        if (sol.terms.length >= problem.terms.length - 8) {
-            problem.addSymmetrie();
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length > 32) {
-            problem.addSymmetrie();
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length > problem.terms.length * 3 / 5) {
-            problem.addSymmetrie();
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length < 15) {
-            problem.removeSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-    }
-    emptyAnswer();
-    main();
 }
 
 function generateRandom(termCount, possibleTerms)
