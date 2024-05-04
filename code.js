@@ -214,58 +214,116 @@ class lexp
         return false;
     }
 
-    addSymmetrie() {
+    addSymmetrie(solution) {
         var termsCopy = this.deepcopy();
-        while (termsCopy.terms.length > 1) {    
-            var term = this.terms[randomInt(0, termsCopy.terms.length - 1)];
-            for (var j = 0; j < termsCopy.terms.length; j++) {
-                var differ = term.differAt(this.terms[j]);
+        var max = [new pterm(new Array(varCount).fill(-1))];
+        for (var i = 0; i < solution.terms.length; i++) {
+            if (solution.terms[i].countVal(-1) < max[0].countVal(-1)) {
+                max = [solution.terms[i]];
+            }
+            else if (solution.terms[i].countVal(-1) == max[0].countVal(-1)) {
+                max.push(solution.terms[i]);
+            }
+        }
+        var solCopy = solution.deepcopy();
+        for (var i = 0; i < max.length; i++) {
+            solCopy.removeTerm(max[i]);
+        }
+        var le = solCopy.genExpanded();
+        var possibleTerms = problem.deepcopy();
+        for (var i = 0; i < le.terms.length; i++) {
+            possibleTerms.removeTerm(le.terms[i]);
+        }
+        var found = false;
+        while (! found && possibleTerms.terms.length > 0) {
+            var j = randomInt(0, possibleTerms.terms.length - 1);
+            var term = possibleTerms.terms[j].copy();
+            for (var i = 0; i < termsCopy.terms.length; i++) {
+                var differ = term.differAt(termsCopy.terms[i]);
                 if (differ.length == 2) {
-                    var i = randomInt(0,1);
-                    var termCopy = term.copy();
-                    termCopy.flip(differ[i]);
-                    if (! this.containsTerm(termCopy)) {
-                        this.removeTerm(term)
-                        this.addTerm(termCopy);
-                        return;
-                    }
-                    termCopy.flip(differ[i]);
-                    if (i == 1) {
-                        termCopy.flip(differ[0]);
+                    var k = randomInt(0, 1);
+                    term.flip(differ[k]);
+                    if (! this.containsTerm(term)) {
+                        this.removeTerm(possibleTerms.terms[j]);
+                        this.addTerm(term);
+                        found = true;
+                        break;
                     }
                     else {
-                        termCopy.flip(differ[1]);
-                    }
-                    if (! this.containsTerm(termCopy)) {
-                        this.removeTerm(term)
-                        this.addTerm(termCopy);
-                        return;
+                        term.flip(differ[k]);
+                        if (k == 1) {
+                            term.flip(differ[0]);
+                            if (! this.containsTerm(term)) {
+                                this.removeTerm(possibleTerms.terms[j]);
+                                this.addTerm(term);
+                                found = true;
+                                break;
+                            }
+                            term.flip(differ[0]);
+                        }
+                        else {
+                            term.flip(differ[1]);
+                            if (! this.containsTerm(term)) {
+                                this.removeTerm(possibleTerms.terms[j]);
+                                this.addTerm(term);
+                                found = true;
+                                break;
+                            }
+                            term.flip(differ[1]);
+                        }
                     }
                 }
             }
-            termsCopy.removeTerm(term);
+            possibleTerms.removeTerm(possibleTerms.terms[j]);
         }
-        for (var j = 0; j < this.terms.length; j++) {
-            var differ = term.differAt(this.terms[j]);
-            if (differ.length == 3) {
-                var i = randomInt(0,2);
-                this.removeTerm(term);
-                term.flip(differ[i]);
-                this.addTerm(term);
-                return;
+        le = solCopy.genExpanded();
+        possibleTerms = problem.deepcopy();
+        for (var i = 0; i < le.terms.length; i++) {
+            possibleTerms.removeTerm(le.terms[i]);
+        }
+        while (! found && possibleTerms.terms.length > 0) {
+            var j = randomInt(0, possibleTerms.terms.length - 1)
+            var term = possibleTerms.terms[j].copy();
+            for (var i = 0; i < termsCopy.terms.length; i++) {
+                var differ = term.differAt(termsCopy.terms[i]);
+                if (differ.length == 3) {
+                    var k = randomInt(1,2);
+                    term.flip(0);
+                    term.flip(k);
+                    if (! this.containsTerm(term)) {
+                        this.removeTerm(possibleTerms.terms[j]);
+                        this.addTerm(term);
+                        found = true;
+                        break;
+                    }
+                }
             }
+            possibleTerms.removeTerm(possibleTerms.terms[j]);
         }
-        
+        if (! found) {
+            this.flipRandom();
+        }
+    }
+
+    flipRandom() {
+        var possibleTerms = generateAllTerms();
+        for (var i = 0; i < this.terms.length; i++) {
+            possibleTerms.removeTerm(this.terms[i]);
+        }
+        var randomRemove = randomInt(0, this.terms.length - 1);
+        this.removeTerm(this.terms[randomRemove]);
+        var randomAdd = randomInt(0, possibleTerms.terms.length - 1);
+        this.addTerm(possibleTerms.terms[randomAdd]);
     }
 
     removeSymmetrie(solution) {
-        var min = new lexp([new pterm(new Array(varCount).fill(1))]);
+        var min = [new pterm(new Array(varCount).fill(1))];
         for (var i = 0; i < solution.terms.length; i++) {
             if (solution.terms[i].countVal(-1) > min[0].countVal(-1)) {
                 min = [solution.terms[i]];
             }
             else if (solution.terms[i].countVal(-1) == min[0].countVal(-1)) {
-                min = min + [solution.terms[i]];
+                min.push(solution.terms[i]);
             }
         }
         var j = randomInt(0, min.length - 1);
@@ -277,16 +335,29 @@ class lexp
         var e = new lexp([minTerm]);
         var le = e.genExpanded();
         var i = randomInt(0, le.terms.length - 1);
-        var j = randomInt(0, v.length - 1);
-        while (le.length > 1) {
-            var oldTerm = le.terms[i].copy();
-            var newTerm = le.terms[i].flip(v[j]);
-            if (! this.containsTerm(newTerm)) {
-                this.removeTerm(oldTerm);
-                this.addTerm(newTerm);
-                return;
+        while (v.length > 0) {
+            var j = randomInt(0, v.length - 1);
+            while (le.length > 1) {
+                var oldTerm = le.terms[i].copy();
+                var newTerm = le.terms[i].flip(v[j]);
+                if (! this.containsTerm(newTerm)) {
+                    this.removeTerm(oldTerm);
+                    this.addTerm(newTerm);
+                    return;
+                }
             }
+            v.splice(j, 1);
         }
+        this.flipRandom();
+    }
+
+    countPorts() {
+        var orPorts = this.terms.length - 1;
+        var andPorts = 0;
+        for (var i = 0; i < this.terms.length; i++) {
+            andPorts += varCount - this.terms[i].countVal(-1) + 1;
+        }
+        return orPorts + andPorts;
     }
 
     notExpanded()
@@ -528,9 +599,9 @@ function calculateScore() {
         return 100;
     }
     else {
-        var pstart = problem.terms.length;
-        var poptimal = sol.terms.length;
-        var panswer = answer.terms.length;
+        var pstart = problem.countPorts();
+        var poptimal = sol.countPorts();
+        var panswer = answer.countPorts();
         return Math.round((pstart - panswer) / (pstart - poptimal) * 100);
     }
 }
@@ -552,7 +623,7 @@ function clearButtons()
 
 function solve(canExp) {
     var newIter = true;
-    while (newIter) {
+    while (newIter) {       // Combine all possible terms until no more minimization is possible
         var table = makeTable(canExp);
         var newTerms = canExp.deepcopy();
         for (var i = 0; i < varCount; i++) {
@@ -573,6 +644,15 @@ function solve(canExp) {
         }
         else {
             canExp = newTerms;
+        }
+    }
+    //  Determine essential prime implicants
+    var termsCopy = problem.deepcopy();
+    for (var i = 0; i < canExp.terms.length; i++) {
+        var solCopy = canExp.deepcopy();
+        solCopy.removeTerm(canExp.terms[i]);
+        if (solCopy.genExpanded().equal(termsCopy)) {
+            canExp.removeTerm(canExp.terms[i--]);
         }
     }
     return canExp;
@@ -597,10 +677,10 @@ function reduce(term, i) {
 }
 
 //////////////////
-//  GENERATOR   //      Genereren van een oplossing die dan wordt ge-expand naar het volledig probleem
+//  GENERATOR   //
 //////////////////
 
-function generateBeginner()
+function generateEasy()
 {
     varCount = 3;
     var termCount = randomInt(3,6);
@@ -611,12 +691,12 @@ function generateBeginner()
     while (! valid) {
         valid = true;
         if (sol.terms.length == problem.terms.length) {
-            problem.addSymmetrie();
+            problem.addSymmetrie(sol);
             sol = solve(problem);
             valid = false;
         }
         else if (sol.terms.length > 3) {
-            problem.addSymmetrie();
+            problem.addSymmetrie(sol);
             sol = solve(problem);
             valid = false;
         }
@@ -630,7 +710,7 @@ function generateBeginner()
     main();
 }
 
-function generateEasy()
+function generateMedium()
 {
     varCount = 4;
     var termCount = randomInt(7,12);
@@ -641,12 +721,12 @@ function generateEasy()
     while (! valid) {
         valid = true;
         if (sol.terms.length >= problem.terms.length - 1) {
-            problem.addSymmetrie();
+            problem.addSymmetrie(sol);
             sol = solve(problem);
             valid = false;
         }
         else if (sol.terms.length > 6) {
-            problem.addSymmetrie();
+            problem.addSymmetrie(sol);
             sol = solve(problem);
             valid = false;
         }
@@ -660,45 +740,10 @@ function generateEasy()
     main();
 }
 
-function generateMedium()
-{
-    varCount = 5;
-    var termCount = randomInt(14,22);
-    var possibleTerms = generateAllTerms();
-    problem = generateRandom(termCount, possibleTerms);
-    sol = solve(problem);
-    var valid = false;
-    while (! valid) {
-        valid = true;
-        if (sol.terms.length >= problem.terms.length - 3) {
-            problem.addSymmetrie();
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length > 8) {
-            problem.addSymmetrie();
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length > problem.terms.length * 3 / 5) {
-            problem.addSymmetrie();
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length < 5) {
-            problem.removeSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-    }
-    emptyAnswer();
-    main();
-}
-
 function generateHard()
 {
-    varCount = 6;
-    var termCount = randomInt(24,38);
+    varCount = 5;
+    var termCount = randomInt(13,22);
     var possibleTerms = generateAllTerms();
     problem = generateRandom(termCount, possibleTerms);
     sol = solve(problem);
@@ -706,56 +751,21 @@ function generateHard()
     while (! valid) {
         valid = true;
         if (sol.terms.length >= problem.terms.length - 5) {
-            problem.addSymmetrie();
+            problem.addSymmetrie(sol);
             sol = solve(problem);
             valid = false;
         }
-        else if (sol.terms.length > 13) {
-            problem.addSymmetrie();
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length > problem.terms.length / 2) {
-            problem.addSymmetrie();
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length < 7) {
-            problem.removeSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-    }
-    emptyAnswer();
-    main()
-}
-
-function generateExpert()
-{
-    varCount = 7;
-    var termCount = randomInt(44,80);
-    var possibleTerms = generateAllTerms();
-    problem = generateRandom(termCount, possibleTerms);
-    sol = solve(problem);
-    var valid = false;
-    while (! valid) {
-        valid = true;
-        if (sol.terms.length >= problem.terms.length - 8) {
-            problem.addSymmetrie();
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length > 32) {
-            problem.addSymmetrie();
+        else if (sol.terms.length > 11) {
+            problem.addSymmetrie(sol);
             sol = solve(problem);
             valid = false;
         }
         else if (sol.terms.length > problem.terms.length * 3 / 5) {
-            problem.addSymmetrie();
+            problem.addSymmetrie(sol)
             sol = solve(problem);
             valid = false;
         }
-        else if (sol.terms.length < 15) {
+        else if (sol.terms.length < 6) {
             problem.removeSymmetrie(sol);
             sol = solve(problem);
             valid = false;
@@ -763,6 +773,36 @@ function generateExpert()
     }
     emptyAnswer();
     main();
+}
+
+function generateExpert()
+{
+    varCount = 6;
+    var termCount = randomInt(25, 45);
+    var possibleTerms = generateAllTerms();
+    problem = generateRandom(termCount, possibleTerms);
+    sol = solve(problem);
+    var valid = false;
+    while (! valid) {
+        valid = true;
+        if (sol.terms.length >= problem.terms.length - 8) {
+            problem.addSymmetrie(sol)
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length > 22) {
+            problem.addSymmetrie(sol)
+            sol = solve(problem);
+            valid = false;
+        }
+        else if (sol.terms.length < 11) {
+            problem.removeSymmetrie(sol);
+            sol = solve(problem);
+            valid = false;
+        }
+    }
+    emptyAnswer();
+    main()
 }
 
 function generateRandom(termCount, possibleTerms)
