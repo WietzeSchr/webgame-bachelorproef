@@ -592,7 +592,7 @@ function reduce(term, i) {
 //  GENERATOR   //
 //////////////////
 
-//  This method initializes a first random problem for the given level
+//  This method generates a random problem for the given level
 function generateLevel(n) {
     varCount = n + 2;
     var minAmountTerms = Math.floor(Math.pow(2, varCount) * 0.4);
@@ -600,25 +600,15 @@ function generateLevel(n) {
     var termCount = randomInt(minAmountTerms, maxAmountTerms);
     problem = generateRandom(termCount);
     sol = solve(problem);
-}
-
-//  This method makes an easy problem by adding an removing symetry when needed
-function makeEasy() {
-    generateLevel(1);
     var valid = false;
     while (! valid) {
         valid = true;
-        if (sol.terms.length == problem.terms.length) {
+        if (sol.terms.length > problem.terms.length * 2 / 3) {
             problem.addSymmetrie(sol);
             sol = solve(problem);
             valid = false;
         }
-        else if (sol.terms.length > 3) {
-            problem.addSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length == 1) {
+        else if (sol.terms.length < problem.terms.length / 4) {
             problem.removeSymmetrie(sol);
             sol = solve(problem);
             valid = false;
@@ -626,89 +616,6 @@ function makeEasy() {
     }
     emptyAnswer();
     main();
-}
-
-//  This method makes a medium problem by adding and removing symetry when needed
-function makeMedium() {
-    generateLevel(2);
-    var valid = false;
-    while (! valid) {
-        valid = true;
-        if (sol.terms.length >= problem.terms.length - 1) {
-            problem.addSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length > 6) {
-            problem.addSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length < 3) {
-            problem.removeSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-    }
-    emptyAnswer();
-    main();
-}
-
-//  This method makes a hard problem by adding and removing symetry when needed
-function makeHard() {
-    generateLevel(3);
-    var valid = false;
-    while (! valid) {
-        valid = true;
-        if (sol.terms.length >= problem.terms.length - 5) {
-            problem.addSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length > 11) {
-            problem.addSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length > problem.terms.length * 3 / 5) {
-            problem.addSymmetrie(sol)
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length < 6) {
-            problem.removeSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-    }
-    emptyAnswer();
-    main();
-}
-
-//  This method makes a expert problem by adding and removing symetry when needed
-function makeExpert() {
-    generateLevel(4);
-    var valid = false;
-    while (! valid) {
-        valid = true;
-        if (sol.terms.length >= problem.terms.length - 8) {
-            problem.addSymmetrie(sol)
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length > 22) {
-            problem.addSymmetrie(sol)
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length < 11) {
-            problem.removeSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-    }
-    emptyAnswer();
-    main()
 }
 
 //  This method generates a random expression with the given amount of terms
