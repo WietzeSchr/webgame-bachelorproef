@@ -162,7 +162,7 @@ class lexp {
     }
 
     //  This method adds symetry to the problem, resulting in less terms after minimization
-    addSymmetrie2(solution) {
+    addSymmetrie(solution) {
         //  vindt kandidaten
         var termsCopy = this.deepcopy();
         var max = [new pterm(new Array(varCount).fill(-1))];
@@ -609,12 +609,12 @@ function makeEasy() {
     while (! valid) {
         valid = true;
         if (sol.terms.length == problem.terms.length) {
-            problem.addSymmetrie2(sol);
+            problem.addSymmetrie(sol);
             sol = solve(problem);
             valid = false;
         }
         else if (sol.terms.length > 3) {
-            problem.addSymmetrie2(sol);
+            problem.addSymmetrie(sol);
             sol = solve(problem);
             valid = false;
         }
@@ -635,12 +635,12 @@ function makeMedium() {
     while (! valid) {
         valid = true;
         if (sol.terms.length >= problem.terms.length - 1) {
-            problem.addSymmetrie2(sol);
+            problem.addSymmetrie(sol);
             sol = solve(problem);
             valid = false;
         }
         else if (sol.terms.length > 6) {
-            problem.addSymmetrie2(sol);
+            problem.addSymmetrie(sol);
             sol = solve(problem);
             valid = false;
         }
@@ -661,17 +661,17 @@ function makeHard() {
     while (! valid) {
         valid = true;
         if (sol.terms.length >= problem.terms.length - 5) {
-            problem.addSymmetrie2(sol);
+            problem.addSymmetrie(sol);
             sol = solve(problem);
             valid = false;
         }
         else if (sol.terms.length > 11) {
-            problem.addSymmetrie2(sol);
+            problem.addSymmetrie(sol);
             sol = solve(problem);
             valid = false;
         }
         else if (sol.terms.length > problem.terms.length * 3 / 5) {
-            problem.addSymmetrie2(sol)
+            problem.addSymmetrie(sol)
             sol = solve(problem);
             valid = false;
         }
@@ -692,12 +692,12 @@ function makeExpert() {
     while (! valid) {
         valid = true;
         if (sol.terms.length >= problem.terms.length - 8) {
-            problem.addSymmetrie2(sol)
+            problem.addSymmetrie(sol)
             sol = solve(problem);
             valid = false;
         }
         else if (sol.terms.length > 22) {
-            problem.addSymmetrie2(sol)
+            problem.addSymmetrie(sol)
             sol = solve(problem);
             valid = false;
         }
