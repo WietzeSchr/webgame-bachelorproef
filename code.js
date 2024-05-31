@@ -1,22 +1,21 @@
 /////////////////////
 //  CLASS PTERM    //
 /////////////////////
+class pterm {
 
-class pterm
-{
-    constructor(vars)
-    {
+    //  This constructor creates a new pterm with term vars
+    constructor(vars) {
         this.term = vars;
         this.length = vars.length
     }
 
-    setVar(i, ni)
-    {
+    //  This method sets var i to ni
+    setVar(i, ni) {
         this.term[i] = ni;
     }
 
-    countVal(n)
-    {
+    //  This method returns the amount of variables with value n
+    countVal(n) {
         var res = 0;
         for (var i = 0; i < this.length; i++)
         {
@@ -28,8 +27,9 @@ class pterm
         return res;
     }
 
-    expand()
-    {
+    //  This method returns a list with two new pterms if this pterm contains at least one -1 value.
+    //  One of them is this pterm with a -1 value set to 0 and the other pterm is this pterm with the same -1 set to 1
+    expand() {
         var found = false;
         for (var i = 0; i < this.length && !found; i++)
         {
@@ -49,31 +49,18 @@ class pterm
         return [r1, r2];
     }
 
-    includes(pother)
-    {
-        for (var i = 0; i < this.length; i++)
-        {
-            if (this.term[i] != pother.term[i] && this.term[i] != -1)
-            {
-                return false;
-            }
-        }
-        return false;
-    }
-
-    differAt(pother)
-    {
+    //  This method returns a list of all indices where this term differs from term pother
+    differAt(pother) {
         var res = [];
-        for (var i = 0; i < this.length; i++)
-        {
-            if (this.term[i] != pother.term[i] && (this.term[i] != -1 || pother.term[i]  != -1))
-            {
+        for (var i = 0; i < this.length; i++) {
+            if (this.term[i] != pother.term[i] && (this.term[i] != -1 || pother.term[i]  != -1)) {
                 res.push(i);
             }
         }
         return res;
     }
 
+    //  This method returns all indices of variables that are either true (= 1) or false (= 0)
     getVarIndex() {
         var res = [];
         for (var i = 0; i < this.length; i++) {
@@ -84,8 +71,9 @@ class pterm
         return res;
     }
 
-    flip(i)
-    {
+    //  This method flips the variable at index i. If variable i = true -> variable i becomes false and otherwise
+    //  If variable i doesn't matter (= -1) this method does nothing
+    flip(i) {
         if (this.term[i] == 0) {
             this.setVar(i, 1);
         }
@@ -94,30 +82,27 @@ class pterm
         }
     }
 
-    toHTML()
-    {
+    //  This method returns a string to show this pterm inn HTML
+    toHTML() {
         var  res = "";
-        for (var i = 0; i < this.length; i++)
-        {
-            if (this.term[i] == 1)
-            {
+        for (var i = 0; i < this.length; i++) {
+            if (this.term[i] == 1) {
                 res += `x<sub>${i + 1}</sub>`;
             }
-            else if (this.term[i] == 0)
-            {
+            else if (this.term[i] == 0) {
                 res += `x'<sub>${i + 1}</sub>`;
             }
         }
         return res;
     }
 
-    copy()
-    {
+    //  This method returns a copy of this pterm
+    copy() {
         return new pterm(copyList(this.term));
     }
 
-    equal(pother)
-    {
+    //  This method returns true if this pterms equals pother
+    equal(pother) {
         return equalArr(this.term, pother.term);
     }
 }
@@ -125,16 +110,16 @@ class pterm
 //////////////////////
 //   CLASS LEXP     //
 //////////////////////
+class lexp {
 
-class lexp
-{
-    constructor(pterms)
-    {
+    //  This constructor creates a new logic expression with the given pterms
+    //  pterms should be a list op pterms
+    constructor(pterms) {
         this.terms = pterms;
     }
 
-    removeTerm(term)
-    {
+    //  This method removes the given term from this expression
+    removeTerm(term) {
         for (var i = 0; i < this.terms.length; i++) {
             if (this.terms[i].equal(term)) {
                 var newTerms = [];
@@ -149,72 +134,36 @@ class lexp
         }
     }
 
-    addTerm(term)
-    {
-        if (! this.containsTerm(term))
-        {
+    //  This method adds a new term to the expression. If the expression already contains this term,
+    //  this method does nothing
+    addTerm(term) {
+        if (! this.containsTerm(term)) {
             this.terms.push(term);
         }
     }
 
-    changeTerm(term, i, ni)
-    {
-        this.removeTerm(term);
-        term.setVar(i, ni);
-        this.addTerm(term);
+    //  This method changes the given term in the expression by changes variable i to ni
+    changeTerm(term, i, ni) {
+        if (this.containsTerm(term)) {
+            this.removeTerm(term);
+            term.setVar(i, ni);
+            this.addTerm(term);
+        }
     }
 
-    avgVar()
-    {
-        var varCounter = 0;
-        for (var i = 0; i < this.terms.length; i++)
-        {
-            varCounter += varCount - this.terms[i].countVal(-1);
-        }
-        if (this.length != 0)
-        {
-            return varCounter / this.length;
-        }
-        return 0;
-    }
-
-    includesTerm(term)
-    {
-        for (var i = 0; i < this.terms.length; i++)
-        {
-            if (this.terms[i].includes(term))
-            {
+    //  This method returns true if this expression already contains a pterm equal to the given term
+    containsTerm(term) {
+        for (var i = 0; i < this.terms.length; i++) {
+            if (this.terms[i].equal(term)) {
                 return true;
             }
         }
         return false;
     }
 
-    findIncludedTerm(term)
-    {
-        for (var i = 0; i < this.terms.length; i++)
-        {
-            if (term.includes(this.terms[i]))
-            {
-                return this.terms[i];
-            }
-        }
-        return undefined;
-    }
-
-    containsTerm(term)
-    {
-        for (var i = 0; i < this.terms.length; i++)
-        {
-            if (this.terms[i].equal(term))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
+    //  This method adds symetry to the problem, resulting in less terms after minimization
     addSymmetrie(solution) {
+        //  vindt kandidaten
         var termsCopy = this.deepcopy();
         var max = [new pterm(new Array(varCount).fill(-1))];
         for (var i = 0; i < solution.terms.length; i++) {
@@ -234,88 +183,61 @@ class lexp
         for (var i = 0; i < le.terms.length; i++) {
             possibleTerms.removeTerm(le.terms[i]);
         }
-        var found = false;
-        while (! found && possibleTerms.terms.length > 0) {
-            var j = randomInt(0, possibleTerms.terms.length - 1);
-            var term = possibleTerms.terms[j].copy();
-            for (var i = 0; i < termsCopy.terms.length; i++) {
-                var differ = term.differAt(termsCopy.terms[i]);
+
+        //  Zoek mogelijke flip
+        for (var i = 0; i < possibleTerms.terms.length; i++) {
+            var kandidaat = possibleTerms.terms[i];
+            for (var j = 0; j < problem.terms.length; j++) {
+                var differ = kandidaat.differAt(problem.terms[j]);
                 if (differ.length == 2) {
-                    var k = randomInt(0, 1);
-                    term.flip(differ[k]);
-                    if (! this.containsTerm(term)) {
-                        this.removeTerm(possibleTerms.terms[j]);
-                        this.addTerm(term);
-                        found = true;
-                        break;
+                    var kandidaatCopy = kandidaat.copy();
+                    i = randomInt(0, 1);
+                    if (i == 1) {
+                        kandidaatCopy.flip(differ[1]);
+                        if (! problem.containsTerm(kandidaatCopy)) {
+                            problem.removeTerm(kandidaat);
+                            problem.addTerm(kandidaatCopy);
+                            return;
+                        }
+                        kandidaatCopy = kandidaat.copy();
+                        kandidaatCopy.flip(differ[0]);
+                        if (! problem.containsTerm(kandidaatCopy)) {
+                            problem.removeTerm(kandidaat);
+                            problem.addTerm(kandidaatCopy);
+                            return;
+                        }
                     }
                     else {
-                        term.flip(differ[k]);
-                        if (k == 1) {
-                            term.flip(differ[0]);
-                            if (! this.containsTerm(term)) {
-                                this.removeTerm(possibleTerms.terms[j]);
-                                this.addTerm(term);
-                                found = true;
-                                break;
-                            }
-                            term.flip(differ[0]);
+                        kandidaatCopy.flip(differ[0]);
+                        if (! problem.containsTerm(kandidaatCopy)) {
+                            problem.removeTerm(kandidaat);
+                            problem.addTerm(kandidaatCopy);
+                            return;
                         }
-                        else {
-                            term.flip(differ[1]);
-                            if (! this.containsTerm(term)) {
-                                this.removeTerm(possibleTerms.terms[j]);
-                                this.addTerm(term);
-                                found = true;
-                                break;
-                            }
-                            term.flip(differ[1]);
+                        kandidaatCopy = kandidaat.copy();
+                        kandidaatCopy.flip(differ[1]);
+                        if (! problem.containsTerm(kandidaatCopy)) {
+                            problem.removeTerm(kandidaat);
+                            problem.addTerm(kandidaatCopy);
+                            return;
                         }
                     }
                 }
             }
-            possibleTerms.removeTerm(possibleTerms.terms[j]);
         }
-        le = solCopy.genExpanded();
-        possibleTerms = problem.deepcopy();
+
+        var possibleRemoveTerms = problem.deepcopy();
         for (var i = 0; i < le.terms.length; i++) {
-            possibleTerms.removeTerm(le.terms[i]);
+            possibleRemoveTerms.removeTerm(le.terms[i]);
         }
-        while (! found && possibleTerms.terms.length > 0) {
-            var j = randomInt(0, possibleTerms.terms.length - 1)
-            var term = possibleTerms.terms[j].copy();
-            for (var i = 0; i < termsCopy.terms.length; i++) {
-                var differ = term.differAt(termsCopy.terms[i]);
-                if (differ.length == 3) {
-                    var k = randomInt(1,2);
-                    term.flip(0);
-                    term.flip(k);
-                    if (! this.containsTerm(term)) {
-                        this.removeTerm(possibleTerms.terms[j]);
-                        this.addTerm(term);
-                        found = true;
-                        break;
-                    }
-                }
-            }
-            possibleTerms.removeTerm(possibleTerms.terms[j]);
-        }
-        if (! found) {
-            this.flipRandom();
-        }
-    }
-
-    flipRandom() {
-        var possibleTerms = generateAllTerms();
+        var possibleAddTerms = generateAllTerms();
         for (var i = 0; i < this.terms.length; i++) {
-            possibleTerms.removeTerm(this.terms[i]);
+            possibleAddTerms.removeTerm(problem.terms[i]);
         }
-        var randomRemove = randomInt(0, this.terms.length - 1);
-        this.removeTerm(this.terms[randomRemove]);
-        var randomAdd = randomInt(0, possibleTerms.terms.length - 1);
-        this.addTerm(possibleTerms.terms[randomAdd]);
+        this.removeAndAddRandom(possibleRemoveTerms, possibleAddTerms);
     }
 
+    //  This method removes symetry from the expression resulting in more terms after minimization
     removeSymmetrie(solution) {
         var min = [new pterm(new Array(varCount).fill(1))];
         for (var i = 0; i < solution.terms.length; i++) {
@@ -327,10 +249,12 @@ class lexp
             }
         }
         var j = randomInt(0, min.length - 1);
-        this.break(min[j]);
+        this.breakTerm(min[j]);
     }
 
-    break(minTerm) {
+    //  This method flips a random variable in a random term included by the given minTerm.
+    //  This makes sure that minTerm can't be part of the expression after minimization
+    breakTerm(minTerm) {
         var v = minTerm.getVarIndex();
         var e = new lexp([minTerm]);
         var le = e.genExpanded();
@@ -346,11 +270,25 @@ class lexp
                     return;
                 }
             }
+            le = e.genExpanded();
             v.splice(j, 1);
         }
-        this.flipRandom();
+        var possibleRemoveTerms = e.genExpanded();
+        var possibleAddTerms = generateAllTerms;
+        for (var i = 0; i < this.terms.length; i++) {
+            possibleAddTerms.removeTerm(this.terms[i]);
+        }
+        this.removeAndAddRandom(possibleRemoveTerms, possibleAddTerms);
     }
 
+    removeAndAddRandom(possibleRemoveTerms, possibleAddTerms) {
+        var removeIndex = randomInt(0, possibleRemoveTerms.length - 1);
+        var addIndex = randomInt(0, possibleAddTerms.length - 1);
+        this.removeTerm(this.terms[removeIndex]);
+        this.addTerm(this.terms[addIndex]);
+    }
+
+    //  This method counts the total of AND and OR ports needed, to make this expression as an electrical circuit
     countPorts() {
         var orPorts = this.terms.length - 1;
         var andPorts = 0;
@@ -360,70 +298,59 @@ class lexp
         return orPorts + andPorts;
     }
 
-    notExpanded()
-    {
-        for (var i = 0; i < this.terms.length; i++)
-        {
-            if (this.terms[i].countVal(-1) > 0)
-            {
+    //  This method returns true if this expression contains no terms that have a don't matter variable
+    notExpanded() {
+        for (var i = 0; i < this.terms.length; i++) {
+            if (this.terms[i].countVal(-1) > 0) {
                 return true;
             }
         }
         return false;
     }
 
-    genExpanded()
-    {
+    //  This method returns a new LExp that represents the same circuit, but with all terms having all variables
+    //  either true (= 1) or false (= 0)    -> (no -1 variables)
+    genExpanded() {
         var res = new lexp([]);
-        for (var i = 0; i < this.terms.length; i++)
-        {
-            if (this.terms[i].countVal(-1) > 0)
-            {
+        for (var i = 0; i < this.terms.length; i++) {
+            if (this.terms[i].countVal(-1) > 0) {
                 var expTerms = this.terms[i].expand();
                 res.addTerm(expTerms[0]);
                 res.addTerm(expTerms[1]);
             }
-            else
-            {
+            else {
                 res.addTerm(this.terms[i].copy());    
             }
         }
-        if (res.notExpanded())
-        {
+        if (res.notExpanded()) {
             return res.genExpanded();
         }
         return res;
     }
 
-    toTableHTML()
-    {
+    //  This method returns a string in HTML format to show this expression in a table
+    toTableHTML() {
         var res = "";
         var fullAnswer = answer.genExpanded();
-        for (var i = 0; i < this.terms.length; i++)
-        {
+        for (var i = 0; i < this.terms.length; i++) {
             if (fullAnswer.containsTerm(this.terms[i])) {
                 fullAnswer.removeTerm(this.terms[i]);
-                if (i % 2 == 1)
-                {
+                if (i % 2 == 1) {
                     res += `<tr class="found">`;
                 }
-                else
-                {
+                else {
                     res += `<tr class="alternativeRowFound">`;
                 }
             }
             else {
-                if (i % 2 == 1)
-                {
+                if (i % 2 == 1) {
                     res += `<tr class="alternativeRow">`;
                 }
-                else
-                {
+                else {
                     res += `<tr>`;
                 }
             }
-            for (var j = 0; j < varCount; j++)
-            {
+            for (var j = 0; j < varCount; j++) {
                 res += `<td>${this.terms[i].term[j]}</td>`
             }
             res += `</tr>`;
@@ -435,8 +362,7 @@ class lexp
             else {
                 res += `<tr class="alternativeRowWrong">`;
             }
-            for (var j = 0; j < varCount; j++)
-            {
+            for (var j = 0; j < varCount; j++) {
                 res += `<td>${fullAnswer.terms[i].term[j]}</td>`
             }
             res += `</tr>`;
@@ -444,24 +370,20 @@ class lexp
         return res;
     }
 
-    toHTML()
-    {
+    //  This method returns a string in HTML format to show this expression as formula
+    toHTML() {
         var res = "";
         res += "Answer    : "
-        if (this.length == 0)
-        {
+        if (this.length == 0) {
             res += "...";
             res += "<br>Active term: "
             res += activeTerm.toHTML();
         }
-        else
-        {
-            for (var i = 0; i < this.terms.length; i++)
-            {
+        else {
+            for (var i = 0; i < this.terms.length; i++) {
                 var term = this.terms[i];
                 res += term.toHTML();
-                if (i != this.terms.length - 1 || activeTerm.countVal(-1) != activeTerm.length)
-                {
+                if (i != this.terms.length - 1 || activeTerm.countVal(-1) != activeTerm.length) {
                     res += " + ";
                 }
             }
@@ -471,27 +393,23 @@ class lexp
         return res;
     }
 
-    equal(lother)
-    {
-        if (lother.terms.length != this.terms.length)
-        {
+    //  This method returns true if this expression has the same terms as lother
+    //  lother should be a logic expression
+    equal(lother) {
+        if (lother.terms.length != this.terms.length) {
             return false;
         }
-        for (var i = 0; i < this.terms.length; i ++)
-        {
-            if (! this.containsTerm(lother.terms[i]))
-            {
+        for (var i = 0; i < this.terms.length; i ++) {
+            if (! this.containsTerm(lother.terms[i])) {
                 return false;
             }
         }
         return true;
     }
 
-    deepcopy()
-    {
+    deepcopy() {
         var newExp = new lexp([])
-        for (var i = 0; i < this.terms.length; i++)
-        {
+        for (var i = 0; i < this.terms.length; i++) {
             newExp.addTerm(this.terms[i].copy());
         }
         return newExp;
@@ -511,89 +429,80 @@ sol = problem.deepcopy();
 problem = problem.genExpanded();
 
 
-function main()
-{
+function main() {
     createHeader();
     document.getElementById("problem").innerHTML = problem.toTableHTML();
     document.getElementById("answer").innerHTML = answer.toHTML();
-    if (! checkWin())
-    {
+    if (! checkWin()) {
         createButtons();
         clearWin();
     }
-    else
-    {
+    else {
         clearButtons();
         wonGame();
     }
 }
 
-function pushTerm()
-{
+//  This method adds the current active term to the answer
+function pushTerm() {
     answer.addTerm(activeTerm);
     activeTerm = new pterm(Array(varCount).fill(-1));
     main();
 }
 
-function delTerm()
-{
+//  This method removes the last added term from the answer
+function delTerm() {
     answer.removeTerm(answer.terms[answer.terms.length - 1]);
-    //activeTerm = new pterm(Array(varCount).fill(-1));
     main();
 }
 
-function emptyAnswer()
-{
+//  This method completely clears the answer
+function emptyAnswer() {
     answer = new lexp([]);
     activeTerm = new pterm(Array(varCount).fill(-1));
     main();
 }
 
-function addToTerm(n)
-{
-    if (n < 0)
-    {
-        if (activeTerm.term[-(n+1)] != 0)
-        {
+//  This method adds a variable to the active term. If n > 0 it sets variable n to true
+//  If n < 0 it sets variable -n to false
+function addToTerm(n) {
+    if (n < 0) {
+        if (activeTerm.term[-(n+1)] != 0) {
             activeTerm.setVar(-(n+1), 0);
         }
-        else
-        {
+        else {
             activeTerm.setVar(-(n+1), -1);
         }
     }
-    else
-    {
-        if (activeTerm.term[n-1] != 1)
-        {
+    else {
+        if (activeTerm.term[n-1] != 1) {
             activeTerm.setVar(n-1, 1);
         }
-        else
-        {
+        else {
             activeTerm.setVar(n-1, -1);
         }
     }
     main();
 }
 
-function checkWin()
-{
+//  This method checks if the given answer is a valid answer for the given problem
+function checkWin() {
     var extendedAnswer = answer.deepcopy();
     extendedAnswer = answer.genExpanded();
-    if (extendedAnswer.equal(problem))
-    {
+    if (extendedAnswer.equal(problem)) {
         return true;
     }
     return false;
 }
 
-function wonGame()
-{
+//  This method shows the winning screen
+function wonGame() {
     var score = calculateScore();
     document.getElementById("win").innerHTML = `<thead><th>You win - score : ${score}/100<th></thead>`;
     document.getElementById("win").innerHTML += `<tbody><tr><td class ="wonButton"><button onclick="emptyAnswer()">Restart</button></td></tr></tbody>`;
 }
 
+//  This method calculates the score
 function calculateScore() {
     if (answer.equal(sol)) {
         return 100;
@@ -606,13 +515,13 @@ function calculateScore() {
     }
 }
 
-function clearWin()
-{
+//  This method clears the win screen
+function clearWin() {
     document.getElementById("win").innerHTML = "";
 }
 
-function clearButtons()
-{
+//  This method removes the buttons
+function clearButtons() {
     document.getElementById("buttons").innerHTML = ""
 }
 
@@ -621,6 +530,7 @@ function clearButtons()
 //  MC CLUSKEY  //
 //////////////////
 
+//  This method minimizes the given logic expression canExp using the Quine-McCluskey algorithm
 function solve(canExp) {
     var newIter = true;
     while (newIter) {       // Combine all possible terms until no more minimization is possible
@@ -658,6 +568,7 @@ function solve(canExp) {
     return canExp;
 }
 
+//  This method makes a dictionary, sorting all pterms on the amount of variables that are true
 function makeTable(canExp) {
     var res = {};
     for (var i = 0; i <= varCount; i++) {
@@ -670,6 +581,7 @@ function makeTable(canExp) {
     return res;
 }
 
+//  This method returns a new pterm equal to the given term, where variable i is set to don't matter (= -1)
 function reduce(term, i) {
     var result = term.copy();
     result.term[i] = -1;
@@ -680,27 +592,23 @@ function reduce(term, i) {
 //  GENERATOR   //
 //////////////////
 
-function generateEasy()
-{
-    varCount = 3;
-    var termCount = randomInt(3,6);
-    var possibleTerms = generateAllTerms();
-    problem = generateRandom(termCount, possibleTerms);
+//  This method generates a random problem for the given level
+function generateLevel(n) {
+    varCount = n + 2;
+    var minAmountTerms = Math.ceil(Math.pow(2, varCount) * 0.15) + 1;
+    var maxAmountTerms = Math.ceil(Math.pow(2, varCount) * 0.65);
+    var termCount = randomInt(minAmountTerms, maxAmountTerms);
+    problem = generateRandom(termCount);
     sol = solve(problem);
     var valid = false;
     while (! valid) {
         valid = true;
-        if (sol.terms.length == problem.terms.length) {
+        if (sol.terms.length > problem.terms.length * 2 / 3) {
             problem.addSymmetrie(sol);
             sol = solve(problem);
             valid = false;
         }
-        else if (sol.terms.length > 3) {
-            problem.addSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length == 1) {
+        else if (sol.terms.length < problem.terms.length / 10) {
             problem.removeSymmetrie(sol);
             sol = solve(problem);
             valid = false;
@@ -710,103 +618,9 @@ function generateEasy()
     main();
 }
 
-function generateMedium()
-{
-    varCount = 4;
-    var termCount = randomInt(7,12);
-    var possibleTerms = generateAllTerms();
-    problem = generateRandom(termCount, possibleTerms);
-    sol = solve(problem);
-    var valid = false;
-    while (! valid) {
-        valid = true;
-        if (sol.terms.length >= problem.terms.length - 1) {
-            problem.addSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length > 6) {
-            problem.addSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length < 3) {
-            problem.removeSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-    }
-    emptyAnswer();
-    main();
-}
-
-function generateHard()
-{
-    varCount = 5;
-    var termCount = randomInt(13,22);
-    var possibleTerms = generateAllTerms();
-    problem = generateRandom(termCount, possibleTerms);
-    sol = solve(problem);
-    var valid = false;
-    while (! valid) {
-        valid = true;
-        if (sol.terms.length >= problem.terms.length - 5) {
-            problem.addSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length > 11) {
-            problem.addSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length > problem.terms.length * 3 / 5) {
-            problem.addSymmetrie(sol)
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length < 6) {
-            problem.removeSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-    }
-    emptyAnswer();
-    main();
-}
-
-function generateExpert()
-{
-    varCount = 6;
-    var termCount = randomInt(25, 45);
-    var possibleTerms = generateAllTerms();
-    problem = generateRandom(termCount, possibleTerms);
-    sol = solve(problem);
-    var valid = false;
-    while (! valid) {
-        valid = true;
-        if (sol.terms.length >= problem.terms.length - 8) {
-            problem.addSymmetrie(sol)
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length > 22) {
-            problem.addSymmetrie(sol)
-            sol = solve(problem);
-            valid = false;
-        }
-        else if (sol.terms.length < 11) {
-            problem.removeSymmetrie(sol);
-            sol = solve(problem);
-            valid = false;
-        }
-    }
-    emptyAnswer();
-    main()
-}
-
-function generateRandom(termCount, possibleTerms)
-{
+//  This method generates a random expression with the given amount of terms
+function generateRandom(termCount) {
+    possibleTerms = generateAllTerms();
     var res = new lexp([]);
     for (var i = 0; i < termCount; i++)
     {
@@ -818,6 +632,7 @@ function generateRandom(termCount, possibleTerms)
     return res
 }
 
+//  This method generates all possible terms (variable combinations) for the current varCount
 function generateAllTerms() {
     var l = new lexp([new pterm(new Array(varCount).fill(-1))]);
     return l.genExpanded();
@@ -827,8 +642,8 @@ function generateAllTerms() {
 //    HTML      //
 //////////////////
 
-function createHeader()
-{
+//  This method creates a fixed header for the problem table
+function createHeader() {
     var res = `<tr>`;
     for (var i = 0; i < varCount; i++)
     {
@@ -838,16 +653,14 @@ function createHeader()
     document.getElementById("fixedHeader").innerHTML = res;
 }
 
-function createButtons()
-{
+//  This method creates the buttons for the current varCount
+function createButtons() {
     var res = "<tr>";
-    for (var i = 0; i < varCount; i++)
-    {
+    for (var i = 0; i < varCount; i++) {
         res += `<td><button onclick="addToTerm(${i + 1})">x<sub>${i+1}</sub></button></td>`;
     }
     res += `</tr><tr>`;
-    for (i = 0; i < varCount; i++)
-    {
+    for (i = 0; i < varCount; i++) {
         res += `<td><button onclick="addToTerm(${-(i + 1)})">x'<sub>${i+1}</sub></button></td>`;
     }
     res += `</tr>`;
@@ -858,43 +671,30 @@ function createButtons()
 //   EXTRA FUNCS    //
 //////////////////////
 
-function copyList(list)
-{
+//  This method returns a copy of a given array list
+function copyList(list) {
     var res = Array(list.length)
-    for (var i = 0; i < list.length; i++)
-    {
+    for (var i = 0; i < list.length; i++) {
         res[i] = list[i];
     }
     return res;
 }
 
-function equalArr(arr1, arr2)
-{
-    if (arr1.length != arr2.length)
-    {
+//  This method returns true if the two given arrays arr1 and arr2 are equal
+function equalArr(arr1, arr2) {
+    if (arr1.length != arr2.length) {
         return false;
     }
-    for (var i = 0; i < arr1.length; i++)
-    {
-        if (arr1[i] != arr2[i])
-        {
+    for (var i = 0; i < arr1.length; i++) {
+        if (arr1[i] != arr2[i]) {
             return false;
         }   
     }
     return true;
 }
 
-function randomInt(start, end)
-{
+//  This method returns a random integer between start and end
+function randomInt(start, end) {
     var multiplier = end - start + 1;
     return start + Math.floor(Math.random() * multiplier);
-}
-
-function between(i, start, end)
-{
-    if (i < start || i > end)
-    {
-        return false;
-    }
-    return true;
 }
