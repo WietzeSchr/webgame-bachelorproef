@@ -595,8 +595,8 @@ function reduce(term, i) {
 //  This method generates a random problem for the given level
 function generateLevel(n) {
     varCount = n + 2;
-    var minAmountTerms = Math.floor(Math.pow(2, varCount) * 0.4);
-    var maxAmountTerms = Math.round(Math.pow(2, varCount) * 0.7);
+    var minAmountTerms = Math.ceil(Math.pow(2, varCount) * 0.15) + 1;
+    var maxAmountTerms = Math.ceil(Math.pow(2, varCount) * 0.65);
     var termCount = randomInt(minAmountTerms, maxAmountTerms);
     problem = generateRandom(termCount);
     sol = solve(problem);
@@ -608,7 +608,7 @@ function generateLevel(n) {
             sol = solve(problem);
             valid = false;
         }
-        else if (sol.terms.length < problem.terms.length / 4) {
+        else if (sol.terms.length < problem.terms.length / 10) {
             problem.removeSymmetrie(sol);
             sol = solve(problem);
             valid = false;
